@@ -8,7 +8,7 @@
 # Copies in batches of up to 5 folders at a time.
 #
 # Usage:
-#   ./copy_folders.sh /path/to/source_folder /path/to/target_folder
+#   ./copy_folders.sh /path/to/source_folder /path/to/target_folder [num_folders]
 #
 # Notes:
 # - Handles folder names with spaces and special characters safely.
@@ -20,17 +20,26 @@
 ################################################################################
 
 usage() {
-  echo "Usage: $0 source_folder target_folder"
-  echo "Example: $0 \"/path/to/source folder\" \"/path/to/target folder\""
+  echo "Usage: $0 source_folder target_folder [num_folders]"
+  echo "  source_folder: The directory to copy folders from."
+  echo "  target_folder: The directory to copy folders to."
+  echo "  num_folders (optional): The number of folders to copy in each batch (default: 5)."
   exit 1
 }
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
   usage
 fi
 
 source_folder="$1"
 target_folder="$2"
+num_folders=${3:-5} # Default to 5 if not provided
+
+# Validate that num_folders is a positive integer
+if ! [[ "$num_folders" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: Number of folders must be a positive integer."
+  exit 1
+fi
 
 # Check if source and target folders exist
 if [ ! -d "$source_folder" ]; then
@@ -81,7 +90,7 @@ for folder in "$source_folder"/*/; do
     fi
   fi
 
-  if [ ${#batch[@]} -eq 5 ]; then
+    if [ ${#batch[@]} -eq "$num_folders" ]; then
     copy_batch
   fi
 done
